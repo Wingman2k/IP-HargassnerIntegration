@@ -11,6 +11,12 @@ CONF_LANGUAGE: Final = "language"
 CONF_SENSOR_SET: Final = "sensor_set"
 CONF_PELLET_ENERGY: Final = "pellet_energy_kwh_per_kg"
 CONF_EFFICIENCY: Final = "efficiency_percent"
+CONF_SYSTEM_TYPE: Final = "system_type"
+
+# System families
+SYSTEM_TYPE_PK: Final = "PK"
+SYSTEM_TYPE_HK: Final = "HK"
+SYSTEM_TYPE_HV: Final = "HV"
 
 # Language options
 LANGUAGE_EN: Final = "EN"
@@ -35,8 +41,10 @@ STATE_CONNECTED: Final = "connected"
 STATE_DISCONNECTED: Final = "disconnected"
 STATE_CONNECTING: Final = "connecting"
 
-# Boiler states (ZK parameter)
-BOILER_STATES_EN: Final = [
+# Boiler states (ZK parameter) for different Hargassner system families.
+# PK and HK/HV can use different state mappings depending on the controller.
+# Keep the PK mapping as the default because it matches the existing behavior.
+BOILER_STATES_PK_EN: Final = [
     "Unknown",
     "Off",
     "Preparing start",
@@ -52,7 +60,7 @@ BOILER_STATES_EN: Final = [
     "Cleaning",
 ]
 
-BOILER_STATES_DE: Final = [
+BOILER_STATES_PK_DE: Final = [
     "Unbekannt",
     "Aus",
     "Startvorbereitung",
@@ -67,6 +75,79 @@ BOILER_STATES_DE: Final = [
     "-",
     "Putzen",
 ]
+
+BOILER_STATES_HK_EN: Final = [
+    "Unknown",
+    "Off",
+    "Standby",
+    "Preheat",
+    "Ignition check",
+    "Heating",
+    "Load increase",
+    "Full load",
+    "Post-run",
+    "Waiting for demand",
+    "Cleaning",
+    "-",
+    "Pump test",
+]
+
+BOILER_STATES_HK_DE: Final = [
+    "Unbekannt",
+    "Aus",
+    "Bereit",
+    "Vorheizen",
+    "Zündprüfung",
+    "Heizen",
+    "Lastanstieg",
+    "Volllast",
+    "Nachlauf",
+    "Warten auf Anforderung",
+    "Putzen",
+    "-",
+    "Pumpentest",
+]
+
+BOILER_STATES_HV_EN: Final = [
+    "Unknown",
+    "Off",
+    "Standby",
+    "Start request",
+    "Ignition",
+    "Hot water",
+    "Heating",
+    "Full load",
+    "Frost protection",
+    "Waiting",
+    "Cleaning",
+    "-",
+    "Service",
+]
+
+BOILER_STATES_HV_DE: Final = [
+    "Unbekannt",
+    "Aus",
+    "Bereit",
+    "Startanfrage",
+    "Zündung",
+    "Warmwasser",
+    "Heizen",
+    "Volllast",
+    "Frostschutz",
+    "Warten",
+    "Putzen",
+    "-",
+    "Service",
+]
+
+BOILER_STATES_EN: Final = BOILER_STATES_PK_EN
+BOILER_STATES_DE: Final = BOILER_STATES_PK_DE
+
+BOILER_STATES_BY_SYSTEM: Final = {
+    SYSTEM_TYPE_PK: {"en": BOILER_STATES_PK_EN, "de": BOILER_STATES_PK_DE},
+    SYSTEM_TYPE_HK: {"en": BOILER_STATES_HK_EN, "de": BOILER_STATES_HK_DE},
+    SYSTEM_TYPE_HV: {"en": BOILER_STATES_HV_EN, "de": BOILER_STATES_HV_DE},
+}
 
 # Error codes (source: Hargassner Nano-PK 6-32 Manual, shb-nano-pk-6-32-de.pdf)
 ERROR_CODES: Final = {
@@ -401,7 +482,7 @@ FIRMWARE_VERSIONS: Final = [
     "V14_0d",  # HSV/CL 9-60KW (Issue #14)
     "V40_0HAR_az15",  # Nano 65
     "V14_1HAR_q_nano2_zuspuf_aup3",  # Nano.2(.3) 15 + auxiliary buffer/AUP (Issue #17)
-    "V30_1HAR_e1", # Eco-HK 30.4
+    "V30_1HAR_e1",  # Eco-HK 30.4
 ]
 
 # Energy calculation defaults
