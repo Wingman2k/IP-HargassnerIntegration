@@ -22,13 +22,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    BOILER_STATES_DE,
-    BOILER_STATES_EN,
+    BOILER_STATES_BY_SYSTEM,
     CONF_DEVICE_NAME,
     CONF_EFFICIENCY,
     CONF_LANGUAGE,
     CONF_PELLET_ENERGY,
     CONF_SENSOR_SET,
+    CONF_SYSTEM_TYPE,
     DEFAULT_EFFICIENCY,
     DEFAULT_PELLET_ENERGY,
     DOMAIN,
@@ -37,6 +37,7 @@ from .const import (
     SENSOR_SET_FULL,
     STATE_CONNECTED,
     STATE_DISCONNECTED,
+    SYSTEM_TYPE_PK,
 )
 from .coordinator import HargassnerDataUpdateCoordinator
 from .firmware_templates import PARAMETER_DESCRIPTIONS
@@ -65,6 +66,16 @@ def _get_param_data(data: dict, key: str) -> dict | None:
     if alt_key:
         return data.get(alt_key)
     return None
+
+
+def _get_boiler_state_options(entry: ConfigEntry, language: str) -> list[str]:
+    """Return the state names matching the configured boiler system family."""
+    system_type = str(entry.data.get(CONF_SYSTEM_TYPE, SYSTEM_TYPE_PK)).upper()
+    language_key = "de" if language.upper() == "DE" else "en"
+    system_map = BOILER_STATES_BY_SYSTEM.get(
+        system_type, BOILER_STATES_BY_SYSTEM[SYSTEM_TYPE_PK]
+    )
+    return system_map.get(language_key, system_map["en"])
 
 
 # =============================================================================
@@ -296,7 +307,7 @@ class HargassnerStateSensor(HargassnerBaseSensor):
         self._attr_name = "Boiler State" if language.upper() == "EN" else "Kesselzustand"
         self._attr_unique_id = f"{entry.entry_id}_state"
         self._language = language
-        self._attr_options = BOILER_STATES_DE if language.upper() == "DE" else BOILER_STATES_EN
+        self._attr_options = _get_boiler_state_options(entry, language)
 
     @property
     def native_value(self) -> str | None:
@@ -484,3 +495,4 @@ class HargassnerEnergySensor(HargassnerBaseSensor):
             "efficiency_percent": efficiency,
             "calculation": f"{pellet_energy} kWh/kg × {efficiency}% efficiency",
         }
+
